@@ -44,7 +44,7 @@ services:
 
   # 3. Apache CouchDB (Data Persistence)
   couchdb:
-    image: couchdb:3.3
+    image: apache/couchdb:3.5.2
     environment:
       - COUCHDB_USER=${COUCHDB_USER}
       - COUCHDB_PASSWORD=${COUCHDB_PASSWORD}
@@ -72,3 +72,6 @@ volumes:
 networks:
   techaxon-net:
     driver: bridge
+
+
+# docker compose up -d
