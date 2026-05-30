@@ -1,0 +1,6 @@
+services:
+  couchdb:
+    restart: unless-stopped
+
+  redis:
+    restart: unless-stopped
