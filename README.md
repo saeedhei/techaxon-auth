@@ -97,3 +97,7 @@ To achieve the secure, offline-first, and SSO-ready requirements, we have implem
 ## Notes
 
 This system is designed with future scalability in mind and can evolve into a microservice-based architecture with an API gateway if needed.
+## Documentation
+
+For deep dives into our architectural decisions and implementations, please refer to the `docs/` directory:
+- [Authentication Architecture & Security Strategy](./docs/01-authentication-architecture.md)
