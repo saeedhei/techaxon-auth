@@ -15,7 +15,7 @@ services:
       - techaxon-net
 
   nextjs:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile.dev
     environment:
@@ -24,6 +24,8 @@ services:
       - JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
       - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
       - COOKIE_DOMAIN=.techaxon.localhost
+    ports:
+      - "3000:3000"
     volumes:
       - .:/app
       - /app/node_modules
