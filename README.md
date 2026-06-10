@@ -82,6 +82,22 @@ No authentication logic is handled by the database layer.
 
 ---
 
+## Technology Stack & Architecture Implementation
+
+To achieve the secure, offline-first, and SSO-ready requirements, we have implemented the following stack:
+
+- **Traefik (v3)**: Acts as our API Gateway and Reverse Proxy. 
+  - *Dev*: Routes `*.techaxon.localhost` domains to Next.js for local SSO testing without SSL.
+  - *Prod*: Enforces HTTPS (Let's Encrypt), routes real domains (`*.techaxon.de`), and secures the internal Docker network.
+- **Next.js (App Router)**: The core Authentication Microservice. It serves the UI and the API. Crucially, it acts as a **Secure Proxy** for CouchDB, ensuring database credentials and the CouchDB REST API are never exposed to the frontend.
+- **Apache CouchDB**: Our persistent data layer. It stores `Users` and `Sessions` (including hashed refresh tokens). It is locked down in the internal Docker network and only accepts requests from the Next.js backend.
+- **Redis**: Used for ultra-fast session lookups, tracking refresh token rotation, and blacklisting revoked tokens.
+- **PouchDB (Frontend)**: Handles offline-first capabilities (e.g., the Quiz module). It syncs locally when offline and pushes to CouchDB *through the Next.js secure proxy* when the connection is restored.
+
 ## Notes
 
 This system is designed with future scalability in mind and can evolve into a microservice-based architecture with an API gateway if needed.
+## Documentation
+
+For deep dives into our architectural decisions and implementations, please refer to the `docs/` directory:
+- [Authentication Architecture & Security Strategy](./docs/01-authentication-architecture.md)

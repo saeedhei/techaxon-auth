@@ -1,23 +1,19 @@
-# version: "3.8"
-
 services:
-  # 1. Traefik Reverse Proxy (API Gateway / Load Balancer)
   traefik:
-    image: traefik:v2.10
+    image: traefik:v3.0
     command:
-      - "--api.insecure=true"
+      - "--api.insecure=true" # Dashboard open for Dev
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
     ports:
       - "80:80"
-      - "8080:8080" # Traefik Dashboard
+      - "8080:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     networks:
       - techaxon-net
 
-  # 2. Next.js Frontend & API (The Auth Microservice / SSO Provider)
   nextjs:
     build:
       context: .
@@ -27,35 +23,34 @@ services:
       - REDIS_URL=${REDIS_URL}
       - JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
       - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
-      - COOKIE_DOMAIN=${COOKIE_DOMAIN}
+      - COOKIE_DOMAIN=.techaxon.localhost
+    ports:
+      - "3000:3000"
     volumes:
       - .:/app
       - /app/node_modules
     labels:
       - "traefik.enable=true"
-      # Route any subdomain of techaxon.localhost to this Next.js app for testing SSO
-      - "traefik.http.routers.nextjs.rule=HostRegexp(`{subdomain:[a-z0-9-]+}.techaxon.localhost`) || Host(`techaxon.localhost`)"
-      - "traefik.http.routers.nextjs.entrypoints=web"
+      - "traefik.http.routers.nextjs-dev.rule=HostRegexp(`{subdomain:[a-z0-9-]+}.techaxon.localhost`) || Host(`techaxon.localhost`)"
+      - "traefik.http.routers.nextjs-dev.entrypoints=web"
     networks:
       - techaxon-net
     depends_on:
       - couchdb
       - redis
 
-  # 3. Apache CouchDB (Data Persistence)
   couchdb:
     image: apache/couchdb:3.5.2
     environment:
       - COUCHDB_USER=${COUCHDB_USER}
       - COUCHDB_PASSWORD=${COUCHDB_PASSWORD}
     ports:
-      - "5984:5984" # Exposing so you can access Fauxton (DB Admin UI) in Codespace
+      - "5984:5984" # Exposed for local debugging
     volumes:
       - couchdb-data:/opt/couchdb/data
     networks:
       - techaxon-net
 
-  # 4. Redis (Session & Refresh Token Rotation lookup)
   redis:
     image: redis:7-alpine
     ports:
