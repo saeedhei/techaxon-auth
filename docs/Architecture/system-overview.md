@@ -2,7 +2,7 @@
 
 This IAM system is a lightweight Identity Provider built using:
 
-- Node.js (NestJS or Express)
+- Node.js (NestJS)
 - CouchDB (document-based storage)
 - OAuth2 / OpenID Connect (OIDC)
 - JWT (RS256)
