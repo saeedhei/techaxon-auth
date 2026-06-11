@@ -39,6 +39,7 @@ Response:
   "id_token": "...",
   "refresh_token": "..."
 }
+```
 Step 5: User Info
 GET /oauth/userinfo
 Flow Summary
