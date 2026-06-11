@@ -1,5 +1,3 @@
----
-
 # 📄 6. `security-model.md`
 
 ```md
