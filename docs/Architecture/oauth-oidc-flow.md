@@ -42,5 +42,8 @@ Response:
 ```
 Step 5: User Info
 GET /oauth/userinfo
+---
 Flow Summary
+```
 Client → IAM → Login → Code → Token → API Access
+```
