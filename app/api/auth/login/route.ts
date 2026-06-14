@@ -4,7 +4,6 @@ import crypto from "crypto";
 
 import couchDb from "@/lib/db/couchdb";
 import redisClient from "@/lib/db/redis";
-// Using YOUR exact function names for password and JWT!
 import { compareValue, hashValue } from "@/lib/auth/password";
 import { signAccessToken, signRefreshToken } from "@/lib/auth/jwt";
 
@@ -20,8 +19,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const usersDb = couchDb.use("users");
-    const query = await usersDb.find({ selector: { username } });
+    // 1. Fetch User from Central Database
+    const coreDb = couchDb.use("techaxon_core");
+    const query = await coreDb.find({
+      selector: { type: "user", username: username },
+    });
     const user = query.docs[0];
 
     if (!user) {
@@ -31,7 +33,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Using your compareValue function
+    // 2. Verify Password
     const isPasswordValid = await compareValue(password, user.password);
     if (!isPasswordValid) {
       return NextResponse.json(
@@ -40,19 +42,20 @@ export async function POST(request: Request) {
       );
     }
 
-    // Using your sign tokens functions
+    // 3. Generate JWT Tokens
     const accessToken = await signAccessToken({
       userId: user._id,
       username: user.username,
     });
     const refreshToken = await signRefreshToken({ userId: user._id });
 
-    // Using your hashValue function
+    // 4. Hash Refresh Token & Create Session
     const hashedRefreshToken = await hashValue(refreshToken);
-
     const sessionId = crypto.randomUUID();
+
     const sessionData = {
       _id: sessionId,
+      type: "session",
       userId: user._id,
       hashedRefreshToken,
       deviceInfo: deviceInfo || "Unknown Device",
@@ -60,13 +63,12 @@ export async function POST(request: Request) {
       ip: request.headers.get("x-forwarded-for") || "Unknown",
       createdAt: new Date().toISOString(),
       isValid: true,
-      type: "session",
     };
 
-    const sessionsDb = couchDb.use("sessions");
-    await sessionsDb.insert(sessionData);
+    // 5. Save Session to CouchDB & Redis
+    await coreDb.insert(sessionData);
 
-    const REDIS_SESSION_TTL = 7 * 24 * 60 * 60;
+    const REDIS_SESSION_TTL = 7 * 24 * 60 * 60; // 7 Days
     await redisClient.set(
       `session:${sessionId}`,
       JSON.stringify(sessionData),
@@ -74,6 +76,7 @@ export async function POST(request: Request) {
       REDIS_SESSION_TTL,
     );
 
+    // 6. Set SSO Cookie
     const cookieStore = await cookies();
     cookieStore.set("techaxon_refresh_token", `${sessionId}:${refreshToken}`, {
       httpOnly: true,
