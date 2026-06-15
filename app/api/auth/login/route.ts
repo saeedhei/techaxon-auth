@@ -53,7 +53,7 @@ export async function POST(request: Request) {
     const hashedRefreshToken = await hashValue(refreshToken);
     const sessionId = crypto.randomUUID();
 
-    const sessionData = {
+    const sessionData: any = {
       _id: sessionId,
       type: "session",
       userId: user._id,
@@ -65,9 +65,13 @@ export async function POST(request: Request) {
       isValid: true,
     };
 
-    // 5. Save Session to CouchDB & Redis
-    await coreDb.insert(sessionData);
+    // 5. Save Session to CouchDB & Capture the Revision ID (_rev)
+    const response = await coreDb.insert(sessionData);
 
+    // Inject CouchDB's revision ID so our Redis cache is in sync
+    sessionData._rev = response.rev;
+
+    // 6. Save Session to Redis (now containing the crucial _rev)
     const REDIS_SESSION_TTL = 7 * 24 * 60 * 60; // 7 Days
     await redisClient.set(
       `session:${sessionId}`,
@@ -76,7 +80,7 @@ export async function POST(request: Request) {
       REDIS_SESSION_TTL,
     );
 
-    // 6. Set SSO Cookie
+    // 7. Set SSO Cookie
     const cookieStore = await cookies();
     cookieStore.set("techaxon_refresh_token", `${sessionId}:${refreshToken}`, {
       httpOnly: true,
