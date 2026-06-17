@@ -1,14 +1,9 @@
 FROM node:20-alpine
 WORKDIR /app
 
-# Install pnpm globally inside the container
 RUN npm install -g pnpm
 
-# Copy package.json and the new pnpm lockfile
 COPY package.json pnpm-lock.yaml* ./
-
-# Install dependencies using pnpm
 RUN pnpm install
 
-# Run the dev server using pnpm
-CMD ["pnpm", "run", "dev"]
+CMD ["pnpm", "start:dev"]
