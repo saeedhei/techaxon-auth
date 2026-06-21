@@ -101,3 +101,17 @@ This system is designed with future scalability in mind and can evolve into a mi
 
 For deep dives into our architectural decisions and implementations, please refer to the `docs/` directory:
 - [Authentication Architecture & Security Strategy](./docs/01-authentication-architecture.md)
+
+## 📚 IAM Documentation (CouchDB-based Identity Provider)
+
+<details>
+  <summary>📁 Architecture</summary>
+
+- [System Overview](./docs/Architecture/system-overview.md)
+- [Data Model](./docs/Architecture/data-model.md)
+- [API Architecture](./docs/Architecture/api-architecture.md)
+- [CouchDB Schema](./docs/Architecture/couchdb-schema.md)
+- [Security Model](./docs/Architecture/security-model.md)
+- [OAuth2 / OIDC Flow](./docs/Architecture/oauth-oidc-flow.md)
+
+</details>
