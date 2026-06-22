@@ -1,10 +1,19 @@
-import { Module, Global } from '@nestjs/common';
-import { CouchDbService } from './couchdb.service';
-import { RedisService } from './redis.service';
+import { Module, Global } from "@nestjs/common";
+import { CouchDbService } from "./couchdb.service";
+import { RedisService } from "./redis.service";
+import { UserRepository } from "./user-repository.interface";
+import { CouchDbUserRepository } from "./couchdb-user.repository";
 
-@Global() // Makes database services globally available without re-importing
+@Global()
 @Module({
-  providers: [CouchDbService, RedisService],
-  exports: [CouchDbService, RedisService],
+  providers: [
+    CouchDbService,
+    RedisService,
+    {
+      provide: UserRepository,
+      useClass: CouchDbUserRepository, // Mapping the abstraction to CouchDB
+    },
+  ],
+  exports: [CouchDbService, RedisService, UserRepository],
 })
 export class DatabaseModule {}

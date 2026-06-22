@@ -40,3 +40,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+couchdb-cluster-test/couchdb/data-0/
+couchdb-cluster-test/couchdb/data-1/
+couchdb-cluster-test/couchdb/config-0/
+couchdb-cluster-test/couchdb/config-1/
