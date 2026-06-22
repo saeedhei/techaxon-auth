@@ -7,7 +7,7 @@ export declare class AuthController {
     private setCookie;
     register(dto: RegisterDto): Promise<{
         success: boolean;
-        id: string;
+        id: any;
     }>;
     login(dto: RegisterDto, req: Request, res: Response): Promise<{
         success: boolean;

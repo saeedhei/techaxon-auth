@@ -8,14 +8,23 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
-const database_module_1 = require("./database/database.module");
-const auth_module_1 = require("./auth/auth.module");
+const auth_module_1 = require("./modules/auth/auth.module");
+const users_module_1 = require("./modules/users/users.module");
+const couchdb_module_1 = require("./infrastructure/couchdb/couchdb.module");
+const config_1 = require("@nestjs/config");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
-        imports: [database_module_1.DatabaseModule, auth_module_1.AuthModule],
+        imports: [
+            config_1.ConfigModule.forRoot({
+                isGlobal: true,
+            }),
+            auth_module_1.AuthModule,
+            users_module_1.UsersModule,
+            couchdb_module_1.CouchDbModule
+        ],
     })
 ], AppModule);
 //# sourceMappingURL=app.module.js.map

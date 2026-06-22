@@ -10,14 +10,23 @@ exports.DatabaseModule = void 0;
 const common_1 = require("@nestjs/common");
 const couchdb_service_1 = require("./couchdb.service");
 const redis_service_1 = require("./redis.service");
+const user_repository_interface_1 = require("./user-repository.interface");
+const couchdb_user_repository_1 = require("./couchdb-user.repository");
 let DatabaseModule = class DatabaseModule {
 };
 exports.DatabaseModule = DatabaseModule;
 exports.DatabaseModule = DatabaseModule = __decorate([
     (0, common_1.Global)(),
     (0, common_1.Module)({
-        providers: [couchdb_service_1.CouchDbService, redis_service_1.RedisService],
-        exports: [couchdb_service_1.CouchDbService, redis_service_1.RedisService],
+        providers: [
+            couchdb_service_1.CouchDbService,
+            redis_service_1.RedisService,
+            {
+                provide: user_repository_interface_1.UserRepository,
+                useClass: couchdb_user_repository_1.CouchDbUserRepository,
+            },
+        ],
+        exports: [couchdb_service_1.CouchDbService, redis_service_1.RedisService, user_repository_interface_1.UserRepository],
     })
 ], DatabaseModule);
 //# sourceMappingURL=database.module.js.map
