@@ -3,28 +3,19 @@ import {
   UnauthorizedException,
   ForbiddenException,
 } from "@nestjs/common";
-import { UserRepository } from "../database/user-repository.interface"; // 🔌 Import HDMI Port
-import { CouchDbService } from "../database/couchdb.service";
-import { RedisService } from "../database/redis.service";
+import { UserRepository } from "../database/user-repository.interface";
+import { SessionService } from "./session.service";
+import { TokenService } from "./token.service";
 import * as bcrypt from "bcryptjs";
-import * as jwt from "jsonwebtoken";
 import * as crypto from "crypto";
 
 @Injectable()
 export class AuthService {
   constructor(
-    // 🔌 Inject the UserRepository instead of raw CouchDbService!
     private readonly userRepo: UserRepository,
-    private readonly couchDb: CouchDbService, // Kept only for direct session reads
-    private readonly redis: RedisService,
+    private readonly sessionService: SessionService, // Injecting Session Helper
+    private readonly tokenService: TokenService, // Injecting Token Helper
   ) {}
-
-  private getAccessSecret() {
-    return process.env.JWT_ACCESS_SECRET || "access123";
-  }
-  private getRefreshSecret() {
-    return process.env.JWT_REFRESH_SECRET || "refresh123";
-  }
 
   async register(username: string, pass: string) {
     const hashedPassword = await bcrypt.hash(pass, 10);
@@ -34,8 +25,6 @@ export class AuthService {
       password: hashedPassword,
       createdAt: new Date().toISOString(),
     };
-
-    // 🔌 Clean & decoupled database insert!
     const response = await this.userRepo.createUser(newUser);
     return { success: true, id: response.id };
   }
@@ -47,28 +36,20 @@ export class AuthService {
     userAgent = "Unknown",
     ip = "Unknown",
   ) {
-    // 🔌 Clean & decoupled database read!
+    // 1. Verify User Credentials
     const user = await this.userRepo.findByUsername(username);
-
     if (!user || !(await bcrypt.compare(pass, user.password))) {
       throw new UnauthorizedException("Invalid credentials");
     }
 
-    const accessToken = jwt.sign(
-      { userId: user._id, username: user.username },
-      this.getAccessSecret(),
-      { expiresIn: "15m" },
-    );
-    const refreshToken = jwt.sign(
-      { userId: user._id },
-      this.getRefreshSecret(),
-      { expiresIn: "7d" },
-    );
+    // 2. Generate access and refresh tokens
+    const accessToken = this.tokenService.generateAccessToken(user);
+    const refreshToken = this.tokenService.generateRefreshToken(user);
 
     const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
     const sessionId = crypto.randomUUID();
 
-    const sessionData: any = {
+    const sessionData = {
       _id: sessionId,
       type: "session",
       userId: user._id,
@@ -80,17 +61,8 @@ export class AuthService {
       isValid: true,
     };
 
-    // Note: sessionData is kept in CouchDB central core directly for now
-    const response = await this.couchDb.db.insert(sessionData);
-    sessionData._rev = response.rev;
-
-    const REDIS_SESSION_TTL = 7 * 24 * 60 * 60;
-    await this.redis.set(
-      `session:${sessionId}`,
-      JSON.stringify(sessionData),
-      "EX",
-      REDIS_SESSION_TTL,
-    );
+    // 3. Delegate Session Creation to SessionService!
+    await this.sessionService.createSession(sessionId, sessionData);
 
     return {
       accessToken,
@@ -102,57 +74,43 @@ export class AuthService {
   }
 
   async refresh(cookieValue: string) {
+    if (!cookieValue)
+      throw new UnauthorizedException("No refresh token provided");
+
     const [sessionId, rawRefreshToken] = cookieValue.split(":");
     if (!sessionId || !rawRefreshToken)
       throw new UnauthorizedException("Invalid token format");
 
-    let payload: any;
-    try {
-      payload = jwt.verify(rawRefreshToken, this.getRefreshSecret());
-    } catch {
-      throw new UnauthorizedException("Token expired or invalid");
-    }
+    // 1. Verify Token signature via TokenService
+    const payload = this.tokenService.verifyRefreshToken(rawRefreshToken);
 
-    let sessionData: any;
-    const cachedSession = await this.redis.get(`session:${sessionId}`);
-
-    if (cachedSession) {
-      sessionData = JSON.parse(cachedSession);
-    } else {
-      try {
-        sessionData = await this.couchDb.db.get(sessionId);
-      } catch {
-        throw new UnauthorizedException("Session not found");
-      }
-    }
+    // 2. Fetch Session via SessionService
+    const sessionData = await this.sessionService.getSession(sessionId);
 
     if (!sessionData || !sessionData.isValid) {
       throw new UnauthorizedException("Session revoked");
     }
 
+    // 3. Verify Token Hash matches database
     const isTokenValid = await bcrypt.compare(
       rawRefreshToken,
       sessionData.hashedRefreshToken,
     );
     if (!isTokenValid) {
-      sessionData.isValid = false;
-      await this.couchDb.db.insert(sessionData);
-      await this.redis.del(`session:${sessionId}`);
+      await this.sessionService.revokeSession(sessionId);
       throw new ForbiddenException(
         "Security breach detected. Session revoked.",
       );
     }
 
-    const newAccessToken = jwt.sign(
-      { userId: sessionData.userId, username: payload.username },
-      this.getAccessSecret(),
-      { expiresIn: "15m" },
-    );
-    const newRefreshToken = jwt.sign(
-      { userId: sessionData.userId },
-      this.getRefreshSecret(),
-      { expiresIn: "7d" },
-    );
+    // 4. Rotate Tokens
+    const newAccessToken = this.tokenService.generateAccessToken({
+      _id: sessionData.userId,
+      username: payload.username,
+    });
+    const newRefreshToken = this.tokenService.generateRefreshToken({
+      _id: sessionData.userId,
+    });
 
     const newHashedRefreshToken = await bcrypt.hash(newRefreshToken, 10);
 
@@ -162,16 +120,8 @@ export class AuthService {
       updatedAt: new Date().toISOString(),
     };
 
-    const response = await this.couchDb.db.insert(updatedSession);
-    updatedSession._rev = response.rev;
-
-    const REDIS_SESSION_TTL = 7 * 24 * 60 * 60;
-    await this.redis.set(
-      `session:${sessionId}`,
-      JSON.stringify(updatedSession),
-      "EX",
-      REDIS_SESSION_TTL,
-    );
+    // 5. Update Session via SessionService
+    await this.sessionService.updateSession(sessionId, updatedSession);
 
     return {
       accessToken: newAccessToken,
@@ -181,14 +131,24 @@ export class AuthService {
   }
 
   async logout(cookieValue: string) {
+    if (!cookieValue) return;
     const [sessionId] = cookieValue.split(":");
     if (sessionId) {
-      await this.redis.del(`session:${sessionId}`);
-      try {
-        const sessionData = await this.couchDb.db.get(sessionId);
-        sessionData.isValid = false;
-        await this.couchDb.db.insert(sessionData);
-      } catch {}
+      // Delegate logout to SessionService
+      await this.sessionService.revokeSession(sessionId);
+    }
+  }
+
+  async verifyAccessToken(token: string) {
+    try {
+      const payload = this.tokenService.verifyAccessToken(token);
+      return {
+        success: true,
+        isAuthenticated: true,
+        user: { id: payload.userId, username: payload.username },
+      };
+    } catch {
+      return { success: false, isAuthenticated: false, user: null };
     }
   }
 }

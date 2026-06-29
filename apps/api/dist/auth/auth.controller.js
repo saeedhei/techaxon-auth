@@ -16,7 +16,6 @@ exports.AuthController = void 0;
 const common_1 = require("@nestjs/common");
 const auth_service_1 = require("./auth.service");
 const register_dto_1 = require("./dto/register.dto");
-const jwt = require("jsonwebtoken");
 let AuthController = class AuthController {
     constructor(authService) {
         this.authService = authService;
@@ -68,20 +67,7 @@ let AuthController = class AuthController {
             return { success: false, isAuthenticated: false, user: null };
         }
         const token = authHeader.split(" ")[1];
-        try {
-            const payload = jwt.verify(token, process.env.JWT_ACCESS_SECRET || "access123");
-            return {
-                success: true,
-                isAuthenticated: true,
-                user: {
-                    id: payload.userId,
-                    username: payload.username,
-                },
-            };
-        }
-        catch (error) {
-            return { success: false, isAuthenticated: false, user: null };
-        }
+        return this.authService.verifyAccessToken(token);
     }
 };
 exports.AuthController = AuthController;

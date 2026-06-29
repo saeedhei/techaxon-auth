@@ -92,7 +92,6 @@ export class AuthController {
   @Get("me")
   @HttpCode(HttpStatus.OK)
   async getMe(@Req() req: Request) {
-    // 1. Get the Authorization header (Bearer token)
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return { success: false, isAuthenticated: false, user: null };
@@ -100,25 +99,7 @@ export class AuthController {
 
     const token = authHeader.split(" ")[1];
 
-    try {
-      // 2. Verify the Access Token
-      const payload = jwt.verify(
-        token,
-        process.env.JWT_ACCESS_SECRET || "access123",
-      ) as any;
-
-      // 3. Return the authenticated state
-      return {
-        success: true,
-        isAuthenticated: true,
-        user: {
-          id: payload.userId,
-          username: payload.username,
-        },
-      };
-    } catch (error) {
-      // Token is expired or invalid
-      return { success: false, isAuthenticated: false, user: null };
-    }
+    // 🔌 Clean & Decoupled: Hand it to the Service Chef!
+    return this.authService.verifyAccessToken(token);
   }
 }

@@ -1,5 +1,5 @@
-import { SignedIn } from "@/src/features/auth/components/SignedIn";
-import { SignedOut } from "@/src/features/auth/components/SignedOut";
+import { SignedIn } from "../features/auth/components/SignedIn";
+import { SignedOut } from "../features/auth/components/SignedOut";
 
 export default function Home() {
   return (

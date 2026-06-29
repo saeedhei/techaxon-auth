@@ -136,6 +136,22 @@ let AuthService = class AuthService {
             catch { }
         }
     }
+    async verifyAccessToken(token) {
+        try {
+            const payload = jwt.verify(token, this.getAccessSecret());
+            return {
+                success: true,
+                isAuthenticated: true,
+                user: {
+                    id: payload.userId,
+                    username: payload.username,
+                },
+            };
+        }
+        catch (error) {
+            return { success: false, isAuthenticated: false, user: null };
+        }
+    }
 };
 exports.AuthService = AuthService;
 exports.AuthService = AuthService = __decorate([

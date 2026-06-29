@@ -25,4 +25,12 @@ export declare class AuthService {
         sessionId: string;
     }>;
     logout(cookieValue: string): Promise<void>;
+    verifyAccessToken(token: string): Promise<{
+        success: boolean;
+        isAuthenticated: boolean;
+        user: {
+            id: any;
+            username: any;
+        };
+    }>;
 }
