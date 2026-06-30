@@ -1,117 +1,98 @@
-# TechAxon Auth
+<p align="center">
+  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
+</p>
 
-API-first authentication system for web and mobile applications, designed for secure, scalable, and cross-platform identity management.
+[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
+[circleci-url]: https://circleci.com/gh/nestjs/nest
 
----
+  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
+    <p align="center">
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
+<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
+<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
+<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
+<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
+  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
+    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
+  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
+</p>
+  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
+  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Overview
+## Description
 
-This authentication system is based on a modern token architecture supporting:
+[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
-- Short-lived JWT access tokens (15 min TTL)
-- Secure refresh token rotation (stored hashed in database)
-- One active refresh token per device/session
-- Device-aware session management
-- Full session control (list, revoke, logout per device)
+## Project setup
 
----
+```bash
+$ pnpm install
+```
 
-## Core Features
+## Compile and run the project
 
-- Stateless authentication using JWT
-- Secure refresh token rotation
-- Multi-device session tracking
-- Session revocation with immediate token invalidation
-- Cross-platform support (Next.js, React Native, Flutter)
+```bash
+# development
+$ pnpm run start
 
----
+# watch mode
+$ pnpm run start:dev
 
-## API Design
+# production mode
+$ pnpm run start:prod
+```
 
-All endpoints are designed for API-first usage:
+## Run tests
 
-- `Authorization: Bearer <access_token>`
-- `POST /auth/login`
-- `POST /auth/refresh`
-- `POST /auth/logout`
-- `GET  /auth/sessions`
+```bash
+# unit tests
+$ pnpm run test
 
----
+# e2e tests
+$ pnpm run test:e2e
 
-## Architecture Overview
+# test coverage
+$ pnpm run test:cov
+```
 
-This system is designed to support both standalone applications and multi-application SaaS platforms.
+## Deployment
 
-### SSO (Single Sign-On)
+When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
 
-In a Next.js-based monolithic or modular architecture, this system supports Single Sign-On (SSO) across multiple subdomains.
+If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
 
-Example flow:
+```bash
+$ pnpm install -g @nestjs/mau
+$ mau deploy
+```
 
-Login at:
-https://techaxon.de
-        ↓
-Authentication cookie set on:
-Domain = .techaxon.de
-        ↓
-User is automatically authenticated across all sub-apps:
+With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
 
-- kanban.techaxon.de → authenticated
-- crm.techaxon.de → authenticated
-- lms.techaxon.de → authenticated
+## Resources
 
----
+Check out a few resources that may come in handy when working with NestJS:
 
-## Data Storage
+- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
+- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
+- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
+- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
+- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
+- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
+- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
+- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
 
-CouchDB is used only as a persistence layer for:
+## Support
 
-- Users
-- Sessions
+Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
 
-No authentication logic is handled by the database layer.
+## Stay in touch
 
----
+- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
+- Website - [https://nestjs.com](https://nestjs.com/)
+- Twitter - [@nestframework](https://twitter.com/nestframework)
 
-## Security Model
+## License
 
-- Access tokens are short-lived and stateless
-- Refresh tokens are hashed and rotated on every use
-- Sessions are device-based and can be revoked individually
-- Compromised sessions can be invalidated immediately
-
----
-
-## Technology Stack & Architecture Implementation
-
-To achieve the secure, offline-first, and SSO-ready requirements, we have implemented the following stack:
-
-- **Traefik (v3)**: Acts as our API Gateway and Reverse Proxy. 
-  - *Dev*: Routes `*.techaxon.localhost` domains to Next.js for local SSO testing without SSL.
-  - *Prod*: Enforces HTTPS (Let's Encrypt), routes real domains (`*.techaxon.de`), and secures the internal Docker network.
-- **Next.js (App Router)**: The core Authentication Microservice. It serves the UI and the API. Crucially, it acts as a **Secure Proxy** for CouchDB, ensuring database credentials and the CouchDB REST API are never exposed to the frontend.
-- **Apache CouchDB**: Our persistent data layer. It stores `Users` and `Sessions` (including hashed refresh tokens). It is locked down in the internal Docker network and only accepts requests from the Next.js backend.
-- **Redis**: Used for ultra-fast session lookups, tracking refresh token rotation, and blacklisting revoked tokens.
-- **PouchDB (Frontend)**: Handles offline-first capabilities (e.g., the Quiz module). It syncs locally when offline and pushes to CouchDB *through the Next.js secure proxy* when the connection is restored.
-
-## Notes
-
-This system is designed with future scalability in mind and can evolve into a microservice-based architecture with an API gateway if needed.
-## Documentation
-
-For deep dives into our architectural decisions and implementations, please refer to the `docs/` directory:
-- [Authentication Architecture & Security Strategy](./docs/01-authentication-architecture.md)
-
-## 📚 IAM Documentation (CouchDB-based Identity Provider)
-
-<details>
-  <summary>📁 Architecture</summary>
-
-- [System Overview](./docs/Architecture/system-overview.md)
-- [Data Model](./docs/Architecture/data-model.md)
-- [API Architecture](./docs/Architecture/api-architecture.md)
-- [CouchDB Schema](./docs/Architecture/couchdb-schema.md)
-- [Security Model](./docs/Architecture/security-model.md)
-- [OAuth2 / OIDC Flow](./docs/Architecture/oauth-oidc-flow.md)
-
-</details>
+Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).

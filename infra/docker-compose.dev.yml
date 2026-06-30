@@ -1,8 +1,0 @@
-services:
-  couchdb:
-    ports:
-      - "5984:5984"
-
-  redis:
-    ports:
-      - "6379:6379"
