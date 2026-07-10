@@ -1,14 +1,22 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { DatabaseModule } from './database/database.module';
+
+import couchdbConfig from './config/couchdb.config';
+
+import { CouchdbModule } from './infrastructure/couchdb/couchdb.module';
 import { AuthModule } from './auth/auth.module';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }), // Loads .env globally
-    DatabaseModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [couchdbConfig],
+    }),
+
+    CouchdbModule,
     AuthModule,
   ],
   controllers: [AppController],
