@@ -34,4 +34,14 @@ export class CouchDbService implements OnModuleInit, UserRepository {
       rev: response.rev,
     };
   }
+  async findByEmail(email: string): Promise<UserDocument | null> {
+    const query = await this.db.find({
+      selector: { type: 'user', email: email },
+    });
+
+    if (query.docs.length > 0) {
+      return query.docs[0] as UserDocument;
+    }
+    return null;
+  }
 }

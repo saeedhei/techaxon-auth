@@ -28,4 +28,5 @@ export type UserDocument = CreateUserData & {
 
 export abstract class UserRepository {
   abstract createUser(user: CreateUserData): Promise<CreateUserResult>;
+  abstract findByEmail(email: string): Promise<UserDocument | null>;
 }
