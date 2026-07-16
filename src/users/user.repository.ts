@@ -7,6 +7,7 @@ export interface CreateUserData {
   type: 'user';
 
   username?: string;
+
   email: string;
 
   passwordHash: string;
@@ -18,15 +19,16 @@ export interface CreateUserData {
   emailVerified: boolean;
 
   createdAt: string;
+
   updatedAt: string;
 }
 
-export type UserDocument = CreateUserData & {
-  _id?: string;
-  _rev?: string;
-};
-
 export abstract class UserRepository {
   abstract createUser(user: CreateUserData): Promise<CreateUserResult>;
-  abstract findByEmail(email: string): Promise<UserDocument | null>;
+
+  abstract findByEmail(email: string): Promise<CreateUserData | null>;
+
+  abstract claimEmail(email: string, userId: string): Promise<void>;
+
+  abstract releaseEmailClaim(email: string): Promise<void>;
 }
